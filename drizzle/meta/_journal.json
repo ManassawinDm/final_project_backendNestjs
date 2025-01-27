@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1737931542010,
+      "tag": "0000_smiling_machine_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1737931763403,
+      "tag": "0001_real_captain_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1737976746372,
+      "tag": "0002_stormy_emma_frost",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1737976890984,
+      "tag": "0003_old_gertrude_yorkes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1737998998314,
+      "tag": "0004_equal_patriot",
+      "breakpoints": true
+    }
+  ]
+}
