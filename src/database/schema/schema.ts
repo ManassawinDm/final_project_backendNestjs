@@ -8,3 +8,4 @@ export * from './transferResults.schema';
 export * from './users.schema';
 export * from './refreshToken.schema'
 export * from './class.schema'
+export * from './usersReject.schema'

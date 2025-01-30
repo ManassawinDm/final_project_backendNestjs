@@ -36,6 +36,13 @@
       "when": 1737998998314,
       "tag": "0004_equal_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1738264980942,
+      "tag": "0005_kind_quasar",
+      "breakpoints": true
     }
   ]
 }

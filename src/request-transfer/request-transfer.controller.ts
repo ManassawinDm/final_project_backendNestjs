@@ -17,4 +17,14 @@ export class RequestTransferController {
           );
         }
       }
+      @Post('delete')
+      async deleteProccess() {
+        try {
+            return this.requestTransferService.deleteProccess();
+        } catch (error) {
+          throw new Error(
+            `Error Delete Proccess: ${error.message}`,
+          );
+        }
+      }
 }
