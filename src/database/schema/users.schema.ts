@@ -9,6 +9,6 @@ export const users = pgTable("users", {
   lastname: varchar("lastname", { length: 255 }),
   class: integer("class").references(()=> Positions.id).notNull(), 
   departmentId: integer("department_id").references(() => mainOffices.id),
-  position: varchar("position", { length: 255 }), 
+  positionDescription: varchar("position_description", { length: 255 }), 
 });
 

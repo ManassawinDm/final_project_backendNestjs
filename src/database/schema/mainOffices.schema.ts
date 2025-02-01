@@ -10,6 +10,4 @@ export const mainOffices = pgTable("main_offices", {
     province: varchar("province", { length: 255 }).notNull(),
     area: varchar("area", { length: 255 }).notNull(),
     type: varchar("type", { length: 10 }).notNull(),
-
-
 });

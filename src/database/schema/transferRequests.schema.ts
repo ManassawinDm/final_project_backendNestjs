@@ -16,6 +16,7 @@ export const transferRequests = pgTable("transfer_requests", {
     .references(() => users.id)
     .notNull(), 
   officeId: integer("office_id").notNull().references(()=>mainOffices.id),
+  targetOffice: integer("office_id").references(()=> mainOffices.id),
   status: transferStatusEnum("status").default("Pending").notNull(),
   reason: text("reason"), 
 });
