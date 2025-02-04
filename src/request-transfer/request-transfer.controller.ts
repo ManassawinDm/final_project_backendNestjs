@@ -7,6 +7,28 @@ export class RequestTransferController {
         private readonly requestTransferService:RequestTransferService
     ){}
 
+    @Get('all')
+      async fetchAll() {
+        try {
+            return this.requestTransferService.fetchAll();
+        } catch (error) {
+          throw new Error(
+            `Error occurred while fetching department: ${error.message}`,
+          );
+        }
+      }
+
+      @Get('user-request')
+      async usersRequest() {
+        try {
+            return this.requestTransferService.usersRequest();
+        } catch (error) {
+          throw new Error(
+            `Error occurred while fetching users request: ${error.message}`,
+          );
+        }
+      }
+
     @Post()
       async processTransfers() {
         try {

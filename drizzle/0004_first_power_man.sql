@@ -1,0 +1,1 @@
+ALTER TABLE "users_reject" ADD COLUMN "userId" integer NOT NULL;

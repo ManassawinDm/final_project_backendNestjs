@@ -10,13 +10,19 @@ export const transferStatusEnum = pgEnum("transfer_status", [
     "Rejected",
   ]);
 
-export const transferRequests = pgTable("transfer_requests", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id")
-    .references(() => users.id)
-    .notNull(), 
-  officeId: integer("office_id").notNull().references(()=>mainOffices.id),
-  targetOffice: integer("office_id").references(()=> mainOffices.id),
-  status: transferStatusEnum("status").default("Pending").notNull(),
-  reason: text("reason"), 
-});
+  export const transferRequests = pgTable("transfer_requests", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .references(() => users.id)
+      .notNull(),
+    officeId: integer("office_id")
+      .notNull()
+      .references(() => mainOffices.id),
+    targetOfficeId: integer("target_office_id") // เปลี่ยนชื่อคอลัมน์เพื่อไม่ให้ซ้ำ
+      .references(() => mainOffices.id),
+    classId: integer("class_id") // เปลี่ยนชื่อคอลัมน์เพื่อไม่ให้ซ้ำ
+      .notNull()
+      .references(() => users.class), // อ้างอิงไปยังคอลัมน์ class ในตาราง users
+    status: transferStatusEnum("status").default("Pending").notNull(),
+    reason: text("reason"),
+  });

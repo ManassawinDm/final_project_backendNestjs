@@ -1,6 +1,6 @@
 {
-  "id": "7dbc2ce3-d24b-44c5-b255-63762f03f89d",
-  "prevId": "d9c74170-7f5e-4aa9-9f68-aa446444bf11",
+  "id": "bd5d60b0-98c7-424d-8b01-7f7fce9c04ff",
+  "prevId": "7aaebad2-fde5-4ddb-b19a-2695bfc17af5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -134,6 +134,12 @@
           "name": "id",
           "type": "serial",
           "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
           "notNull": true
         },
         "description": {
@@ -392,6 +398,26 @@
           "primaryKey": false,
           "notNull": true
         },
+        "target_office_id": {
+          "name": "target_office_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "class_id": {
+          "name": "class_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "transfer_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Pending'"
+        },
         "reason": {
           "name": "reason",
           "type": "text",
@@ -423,6 +449,32 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfer_requests_target_office_id_main_offices_id_fk": {
+          "name": "transfer_requests_target_office_id_main_offices_id_fk",
+          "tableFrom": "transfer_requests",
+          "tableTo": "main_offices",
+          "columnsFrom": [
+            "target_office_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfer_requests_class_id_users_class_fk": {
+          "name": "transfer_requests_class_id_users_class_fk",
+          "tableFrom": "transfer_requests",
+          "tableTo": "users",
+          "columnsFrom": [
+            "class_id"
+          ],
+          "columnsTo": [
+            "class"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -532,7 +584,7 @@
           "name": "class",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "department_id": {
           "name": "department_id",
@@ -540,8 +592,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "position": {
-          "name": "position",
+        "position_description": {
+          "name": "position_description",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
@@ -568,6 +620,87 @@
           "tableTo": "main_offices",
           "columnsFrom": [
             "department_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users_reject": {
+      "name": "users_reject",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "experience": {
+          "name": "experience",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "numeric(10, 8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "numeric(11, 8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "distance": {
+          "name": "distance",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sick": {
+          "name": "sick",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse": {
+          "name": "spouse",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score": {
+          "name": "score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requestId": {
+          "name": "requestId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "users_reject_requestId_transfer_requests_id_fk": {
+          "name": "users_reject_requestId_transfer_requests_id_fk",
+          "tableFrom": "users_reject",
+          "tableTo": "transfer_requests",
+          "columnsFrom": [
+            "requestId"
           ],
           "columnsTo": [
             "id"

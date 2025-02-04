@@ -3,16 +3,25 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as schema from '../database/schema/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZEL } from 'src/database/database.module';
-import { and, asc, eq, gt } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  eq,
+  gt,
+  inArray,
+  sql,
+} from 'drizzle-orm';
 
-interface GroupedRequest {
+interface IrejectUser {
   userId: number;
   requestId: number;
-  priority: number;
-}
-interface RejectedUser {
-  userId: number;
-  reason: string[];
+  latitude: string;
+  longitude: string;
+  departmentId: number | null;
+
+  reason: (string | null)[];
 }
 
 @Injectable()
@@ -23,113 +32,90 @@ export class RequestTransferService {
     private readonly jwtService: JwtService,
   ) {}
 
-  //   async processTransfers() {
-  //     // Cache offices data
-  //     const offices = await this.database
-  //       .select({
-  //         officeId: schema.officePositions.officeId,
-  //         class: schema.officePositions.class,
-  //         quantity: schema.officePositions.quantity,
-  //       })
-  //       .from(schema.officePositions)
-  //       .where(gt(schema.officePositions.quantity, 0));
+  async fetchAll() {
+    const processedResult = await this.database
+      .select({
+        description: schema.Positions.description,
+        usersAll: countDistinct(schema.users.id).as('usersAll'),
+        usersRequest: countDistinct(schema.transferRequests.userId).as(
+          'usersRequest',
+        ),
+        usersRemaining: countDistinct(schema.users.id).as('usersRemaining'),
+        officeAll: countDistinct(schema.officePositions.id).as('officeAll'),
+        usersApprove: countDistinct(
+          sql`CASE WHEN ${schema.transferRequests.status} = 'Approved' THEN 1 END`,
+        ).as('usersApprove'),
+        usersReject: countDistinct(
+          sql`CASE WHEN ${schema.transferRequests.status} = 'Rejected' THEN 1 END`,
+        ).as('usersReject'),
+      })
+      .from(schema.Positions)
+      .leftJoin(schema.users, eq(schema.users.class, schema.Positions.id))
+      .leftJoin(
+        schema.transferRequests,
+        eq(schema.transferRequests.userId, schema.users.id),
+      )
+      .leftJoin(
+        schema.officePositions,
+        eq(schema.officePositions.class, schema.Positions.id),
+      )
+      .where(gt(schema.officePositions.quantity, 0))
+      .groupBy(schema.Positions.id, schema.Positions.description);
 
-  //     // Fetch transfer requests and related user data
-  //     const requests = await this.database
-  //       .select({
-  //         userId: schema.transferRequests.userId,
-  //         officeId: schema.transferRequests.officeId,
-  //         reason: schema.transferRequests.reason,
-  //         class: schema.users.class,
-  //       })
-  //       .from(schema.transferRequests)
-  //       .innerJoin(
-  //         schema.users,
-  //         eq(schema.transferRequests.userId, schema.users.id),
-  //       )
-  //       .orderBy(asc(schema.users.id), asc(schema.transferRequests.id));
+    const result = processedResult.map((row) => ({
+      ...row,
+      combinedField: `${row.usersApprove} / ${row.usersReject} / ${row.officeAll}`,
+    }));
 
-  //     // Group requests by userId
-  //     const groupedRequests = requests.reduce(
-  //       (acc, request) => {
-  //         if (!acc[request.userId]) {
-  //           acc[request.userId] = {
-  //             userId: request.userId,
-  //             class: request.class,
-  //             officeId: [],
-  //             reason: [],
-  //           };
-  //         }
+    return {
+      result,
+    };
+  }
 
-  //         acc[request.userId].officeId.push(request.officeId);
-  //         acc[request.userId].reason.push(request.reason ?? '');
-  //         return acc;
-  //       },
-  //       {} as Record<number, GroupedRequest>,
-  //     );
+  async usersRequest() {
+    const result = await this.database
+      .selectDistinct({
+        id: schema.users.id,
+        fullname: sql`${schema.users.firstname} || ' ' || ${schema.users.lastname}`,
+        officeName: schema.mainOffices.name,
+        class: schema.Positions.description,
+      })
+      .from(schema.transferRequests)
+      .innerJoin(
+        schema.users,
+        eq(schema.transferRequests.userId, schema.users.id),
+      )
+      .innerJoin(
+        schema.mainOffices,
+        eq(schema.mainOffices.id, schema.users.departmentId),
+      )
+      .innerJoin(schema.Positions, eq(schema.Positions.id, schema.users.class))
+      .orderBy(schema.users.id);
 
-  //     // Prepare update data
-  //     const updateOffice: Record<number, number> = {};
-  //     const approveUserID: number[] = [];
-  //     const rejectUserID: RejectedUser[] = [];
-
-  //     // Process grouped requests
-  //     for (const [userId, data] of Object.entries(groupedRequests)) {
-  //       for (const officeId of data.officeId) {
-  //         // Find the corresponding office with matching officeId and class
-  //         const office = offices.find(
-  //           (o) => o.officeId === officeId && o.class === data.class,
-  //         );
-
-  //         if (office && office.quantity > 0) {
-  //           // Decrement the office quantity
-  //           office.quantity -= 1;
-  //           approveUserID.push(Number(userId));
-
-  //           // Update the updateOffice object
-  //           if (updateOffice[officeId] !== undefined) {
-  //             updateOffice[officeId] -= 1;
-  //           } else {
-  //             updateOffice[officeId] = office.quantity;
-  //           }
-  //           // Break since the user's request has been approved
-  //           break;
-  //         }else{
-  //           rejectUserID.push({
-  //             userId: Number(userId),
-  //             reason: data.reason,
-  //           });
-  //           break;
-  //         }
-  //       }
-  //     }
-  //     console.log('Updated office data:', updateOffice);
-  //     console.log('Approved user IDs:', approveUserID);
-  //     console.log('Approved user IDs:', rejectUserID);
-  //   }
-  // }
+    return {
+      result,
+    };
+  }
 
   async processTransfers() {
-    const selectedTransfers: GroupedRequest[] = [];
-    const alreadyApprovedUsers = new Set(
-      (
-        await this.database
-          .select({ userId: schema.transferRequests.userId })
-          .from(schema.transferRequests)
-          .where(eq(schema.transferRequests.status, 'Approved'))
-      ).map((row) => row.userId),
-    );
+    const approvedList = new Set();
+    const officeQualityMap = new Map();
+    const rejectList: IrejectUser[] = [];
 
     const requests = await this.database
       .select({
         userId: schema.transferRequests.userId,
         firstName: schema.users.firstname,
         lastName: schema.users.lastname,
+        department: schema.users.departmentId,
         requestId: schema.transferRequests.id,
         officeId: schema.transferRequests.officeId,
         officeName: schema.mainOffices.name,
+        latitude: schema.mainOffices.latitude,
+        longitude: schema.mainOffices.longitude,
         class: schema.officePositions.class,
         reason: schema.transferRequests.reason,
+        quantityId: schema.officePositions.id,
         quantity: schema.officePositions.quantity,
       })
       .from(schema.Positions)
@@ -149,9 +135,12 @@ export class RequestTransferService {
         schema.mainOffices,
         eq(schema.transferRequests.officeId, schema.mainOffices.id),
       )
+      .where(eq(schema.transferRequests.status, 'Pending'))
       .orderBy(asc(schema.transferRequests.id));
 
-    const groupedRequests = requests.reduce(
+    const sortedRequests = requests.sort((a, b) => a.userId - b.userId);
+
+    const groupedRequests = sortedRequests.reduce(
       (acc, request) => {
         if (!acc[request.userId]) {
           acc[request.userId] = [];
@@ -159,50 +148,178 @@ export class RequestTransferService {
         acc[request.userId].push(request);
         return acc;
       },
-      {} as Record<number, typeof requests>,
+      {} as Record<number, typeof requests>
     );
 
-    const updateOfficePromises: Promise<any>[] = [];
-    const updateTransferPromises: Promise<any>[] = [];
-
     for (const userId in groupedRequests) {
-      let i = 0;
       const userRequests = groupedRequests[userId];
-      if (alreadyApprovedUsers.has(Number(userId))) continue;
+
+      if (approvedList.has(Number(userId))) continue;
+
+      let i = 0;
+      let isApproved = false;
+
       for (const request of userRequests) {
         i++;
-        if (request.quantity > 0) {
-          selectedTransfers.push({
+
+        const currentQuantity = officeQualityMap.has(request.quantityId)
+          ? officeQualityMap.get(request.quantityId)
+          : request.quantity;
+
+        if (currentQuantity > 0) {
+          approvedList.add({
             userId: request.userId,
+            officeId: request.officeId,
             requestId: request.requestId,
             priority: i,
           });
-          alreadyApprovedUsers.add(request.userId);
-          updateOfficePromises.push(
-            this.database
-              .update(schema.officePositions)
-              .set({ quantity: request.quantity - 1 })
-              .where(
-                and(
-                  eq(schema.officePositions.officeId, request.officeId),
-                  eq(schema.officePositions.class, request.class),
-                ),
-              ),
+          officeQualityMap.set(
+            request.quantityId,
+            Math.max(0, currentQuantity - 1),
           );
-          updateTransferPromises.push(
-            this.database
-              .update(schema.transferRequests)
-              .set({ status: 'Approved' })
-              .where(eq(schema.transferRequests.id, request.requestId)),
-          );
-          i = 0;
+
+          isApproved = true;
           break;
         }
       }
+      if (!isApproved) {
+        rejectList.push({
+          userId: Number(userId),
+          requestId: userRequests[0].requestId,
+          departmentId:userRequests[0].department,
+          latitude: userRequests[0].latitude,
+          longitude: userRequests[0].longitude,
+          reason: userRequests.map((req) => req.reason),
+        });
+      }
     }
-    await Promise.all([...updateOfficePromises, ...updateTransferPromises]);
-    console.log(selectedTransfers);
-    console.log(alreadyApprovedUsers);
+
+
+
+
+
+
+
+    
+
+
+
+    // const officeQualityArray = Array.from(officeQualityMap.entries());
+    // const approvedArray = Array.from(approvedList) as {
+    //   userId: number;
+    //   officeId: number;
+    //   requestId: number;
+    //   priority: number;
+    // }[];
+
+    // const requestUpdates = approvedArray.map((approval) => ({
+    //   requestId: approval.requestId,
+    //   officeId: approval.officeId,
+    // }));
+
+    // const positionUpdates = officeQualityArray.map(
+    //   ([quantityId, newQuantity]) => ({
+    //     quantityId,
+    //     newQuantity,
+    //   }),
+    // );
+
+    // const updateTransferRequests = async () => {
+    //   const requestIds = requestUpdates.map((r) => r.requestId);
+
+    //   await this.database
+    //     .update(schema.transferRequests)
+    //     .set({
+    //       status: 'Approved',
+    //     })
+    //     .where(inArray(schema.transferRequests.id, requestIds));
+
+    //   await Promise.all(
+    //     requestUpdates.map(async (approval) => {
+    //       await this.database
+    //         .update(schema.transferRequests)
+    //         .set({
+    //           targetOfficeId: approval.officeId,
+    //         })
+    //         .where(eq(schema.transferRequests.id, approval.requestId));
+    //     }),
+    //   );
+    // };
+
+    // const updateOfficePositions = async () => {
+    //   const quantityIds = positionUpdates.map((p) => p.quantityId);
+    //   await Promise.all(
+    //     positionUpdates.map(async ({ quantityId, newQuantity }) => {
+    //       await this.database
+    //         .update(schema.officePositions)
+    //         .set({ quantity: newQuantity })
+    //         .where(eq(schema.officePositions.id, quantityId));
+    //     }),
+    //   );
+    // };
+    // const rejectArray = Array.from(rejectList) as {
+    //   userId: number;
+    //   requestId: number;
+    //   departmentId: number;
+    //   latitude: string;
+    //   longitude: string;
+    //   reason: string[];
+    // }[];
+    
+    // // ฟังก์ชันอัปเดต users_reject
+    // const updateUsersReject = async () => {
+    //   await Promise.all(
+    //     rejectArray.map(async (reject) => {
+    //       await this.database
+    //         .insert(schema.usersReject)
+    //         .values({
+    //           userId: reject.userId,
+    //           experience: reject.departmentId.toString(),
+    //           latitude: reject.latitude,
+    //           longitude: reject.longitude,
+    //           requestId: reject.requestId,
+    //           ai_keyword: reject.reason.join(','), 
+    //           sick: '', 
+    //           spouse: '', 
+    //           score: null, 
+    //         });
+    //     })
+    //   );
+    // };
+
+    // await Promise.all([
+    //   updateTransferRequests(),
+    //   updateOfficePositions(),
+    //   updateUsersReject(),
+    // ]);
+
+
+
+
+    const apiResponse = await apiModelPython('http://localhost:5001/transfer-reasons', {
+      rejectList,
+    });
+    const updates = apiResponse.map((response) => ({
+      userId: response.userId,
+      sick: response.health ? 'true' : 'false', // แปลง boolean เป็น string
+      spouse: response.couple ? 'true' : 'false',
+    }));
+    await Promise.all(
+      updates.map(async (update) => {
+        await this.database
+          .update(schema.usersReject)
+          .set({
+            sick: update.sick,
+            spouse: update.spouse,
+          })
+          .where(eq(schema.usersReject.userId, update.userId));
+      })
+    )
+    // console.log('approvedList', approvedArray);
+    // console.log('officeQualityMap', officeQualityMap);
+    // console.log('rejectList', rejectList);
+    
+
   }
 
   async deleteProccess() {
@@ -244,10 +361,26 @@ export class RequestTransferService {
     const updateTransferRequest = requests.map((request) =>
       this.database
         .update(schema.transferRequests)
-        .set({ status: 'Pending' })
+        .set({ status: 'Pending' ,targetOfficeId:null})
         .where(eq(schema.transferRequests.id, request.requestId)),
     );
     await Promise.all([...updateOfficePosition, ...updateTransferRequest]);
     console.log(`Updated ${requests.length} transfer requests.`);
+  }
+}
+
+async function apiModelPython(url: string, data: object) {
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error(`Failed: ${response.statusText}`);
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
   }
 }
