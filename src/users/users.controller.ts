@@ -27,4 +27,14 @@ export class UsersController {
         }
         return this.usersService.processExcel(file);
       }
+
+    //  new 
+      @Post('import')
+      @UseInterceptors(FileInterceptor('file'))
+      async uploadFileNew(@UploadedFile() file: Express.Multer.File) {
+        if (!file) {
+          throw new BadRequestException('No file uploaded');
+        }
+        return this.usersService.importFile(file);
+      }
 }

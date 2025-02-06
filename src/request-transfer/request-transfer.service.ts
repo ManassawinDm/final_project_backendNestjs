@@ -293,33 +293,31 @@ export class RequestTransferService {
     //   updateUsersReject(),
     // ]);
 
+    // const apiResponse = await apiModelPython('http://localhost:5001/transfer-reasons', {
+    //   rejectList,
+    // });
+    // const updates = apiResponse.map((response) => ({
+    //   userId: response.userId,
+    //   sick: response.health ? 'true' : 'false', 
+    //   spouse: response.couple ? 'true' : 'false',
+    // }));
+    // await Promise.all(
+    //   updates.map(async (update) => {
+    //     await this.database
+    //       .update(schema.usersReject)
+    //       .set({
+    //         sick: update.sick,
+    //         spouse: update.spouse,
+    //       })
+    //       .where(eq(schema.usersReject.userId, update.userId));
+    //   })
+    // )
+    console.log('approvedList', approvedList);
+    console.log('officeQualityMap', officeQualityMap);
+    console.log('rejectList', rejectList);
 
 
-
-    const apiResponse = await apiModelPython('http://localhost:5001/transfer-reasons', {
-      rejectList,
-    });
-    const updates = apiResponse.map((response) => ({
-      userId: response.userId,
-      sick: response.health ? 'true' : 'false', // แปลง boolean เป็น string
-      spouse: response.couple ? 'true' : 'false',
-    }));
-    await Promise.all(
-      updates.map(async (update) => {
-        await this.database
-          .update(schema.usersReject)
-          .set({
-            sick: update.sick,
-            spouse: update.spouse,
-          })
-          .where(eq(schema.usersReject.userId, update.userId));
-      })
-    )
-    // console.log('approvedList', approvedArray);
-    // console.log('officeQualityMap', officeQualityMap);
-    // console.log('rejectList', rejectList);
     
-
   }
 
   async deleteProccess() {

@@ -1,74 +1,9 @@
 {
-  "id": "d0da4617-14fb-4290-888e-90e56a5acc0f",
-  "prevId": "df0d9a91-0439-48b4-bd27-4be0b3f54508",
+  "id": "ccb458d5-6fa0-495a-ab9f-ff8255d756d0",
+  "prevId": "ea276615-9aa4-46f4-a173-ee9eea795953",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.ai_recommendations": {
-      "name": "ai_recommendations",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "office_id": {
-          "name": "office_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "predicted_reason": {
-          "name": "predicted_reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "ai_recommendations_user_id_users_id_fk": {
-          "name": "ai_recommendations_user_id_users_id_fk",
-          "tableFrom": "ai_recommendations",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.auth_users": {
       "name": "auth_users",
       "schema": "",
@@ -132,14 +67,8 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
           "notNull": true
         },
         "description": {
@@ -211,7 +140,7 @@
         },
         "type": {
           "name": "type",
-          "type": "varchar(10)",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -250,7 +179,8 @@
           "name": "quantity",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": 0
         }
       },
       "indexes": {},
@@ -333,6 +263,81 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.report_result": {
+      "name": "report_result",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "seniority_number": {
+          "name": "seniority_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_office": {
+          "name": "current_office",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_office": {
+          "name": "target_office",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_class": {
+          "name": "current_class",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_class": {
+          "name": "target_class",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "year_id": {
+          "name": "year_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "report_result_year_id_transfer_periods_id_fk": {
+          "name": "report_result_year_id_transfer_periods_id_fk",
+          "tableFrom": "report_result",
+          "tableTo": "transfer_periods",
+          "columnsFrom": [
+            "year_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.transfer_periods": {
       "name": "transfer_periods",
       "schema": "",
@@ -345,6 +350,12 @@
         },
         "round": {
           "name": "round",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "year": {
+          "name": "year",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -423,6 +434,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "transferPeriods": {
+          "name": "transferPeriods",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -466,15 +483,15 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "transfer_requests_class_id_users_class_fk": {
-          "name": "transfer_requests_class_id_users_class_fk",
+        "transfer_requests_transferPeriods_transfer_periods_id_fk": {
+          "name": "transfer_requests_transferPeriods_transfer_periods_id_fk",
           "tableFrom": "transfer_requests",
-          "tableTo": "users",
+          "tableTo": "transfer_periods",
           "columnsFrom": [
-            "class_id"
+            "transferPeriods"
           ],
           "columnsTo": [
-            "class"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -486,8 +503,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.transfer_results": {
-      "name": "transfer_results",
+    "public.user_infomation": {
+      "name": "user_infomation",
       "schema": "",
       "columns": {
         "id": {
@@ -502,48 +519,207 @@
           "primaryKey": false,
           "notNull": true
         },
-        "office_id": {
-          "name": "office_id",
+        "age": {
+          "name": "age",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "status": {
-          "name": "status",
-          "type": "transfer_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'Pending'"
-        },
-        "class": {
-          "name": "class",
-          "type": "integer",
+        "current_position_date": {
+          "name": "current_position_date",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "requested_class": {
+          "name": "requested_class",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "home_province": {
+          "name": "home_province",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "relationship_status": {
+          "name": "relationship_status",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "house_number": {
+          "name": "house_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "village_number": {
+          "name": "village_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alley": {
+          "name": "alley",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "soi": {
+          "name": "soi",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "province": {
+          "name": "province",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "district": {
+          "name": "district",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subdistrict": {
+          "name": "subdistrict",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "postal_code": {
+          "name": "postal_code",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone_number": {
+          "name": "phone_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address_type": {
+          "name": "address_type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_name": {
+          "name": "spouse_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spouse_office": {
+          "name": "spouse_office",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spouse_house_number": {
+          "name": "spouse_house_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_village_number": {
+          "name": "spouse_village_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_alley": {
+          "name": "spouse_alley",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spouse_soi": {
+          "name": "spouse_soi",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spouse_province": {
+          "name": "spouse_province",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_district": {
+          "name": "spouse_district",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_subdistrict": {
+          "name": "spouse_subdistrict",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_postal_code": {
+          "name": "spouse_postal_code",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spouse_phone_number": {
+          "name": "spouse_phone_number",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "work_history": {
+          "name": "work_history",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "work_history_date": {
+          "name": "work_history_date",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "work_history_two": {
+          "name": "work_history_two",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "work_history_date_two": {
+          "name": "work_history_date_two",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "work_history_three": {
+          "name": "work_history_three",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "work_history_date_three": {
+          "name": "work_history_date_three",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "transfer_results_user_id_users_id_fk": {
-          "name": "transfer_results_user_id_users_id_fk",
-          "tableFrom": "transfer_results",
+        "user_infomation_user_id_users_id_fk": {
+          "name": "user_infomation_user_id_users_id_fk",
+          "tableFrom": "user_infomation",
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "transfer_results_class_position_id_fk": {
-          "name": "transfer_results_class_position_id_fk",
-          "tableFrom": "transfer_results",
-          "tableTo": "position",
-          "columnsFrom": [
-            "class"
           ],
           "columnsTo": [
             "id"
@@ -568,17 +744,23 @@
           "primaryKey": true,
           "notNull": true
         },
+        "seniority_number": {
+          "name": "seniority_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "firstname": {
           "name": "firstname",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "lastname": {
           "name": "lastname",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "class": {
           "name": "class",
@@ -596,7 +778,7 @@
           "name": "position_description",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
@@ -642,6 +824,12 @@
           "name": "id",
           "type": "serial",
           "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
           "notNull": true
         },
         "experience": {

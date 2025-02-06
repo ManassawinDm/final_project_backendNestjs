@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { DepartmentModule } from './department/department.module';
 import { PositionModule } from './position/position.module';
 import { RequestTransferModule } from './request-transfer/request-transfer.module';
+import { ClassModule } from './class/class.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RequestTransferModule } from './request-transfer/request-transfer.modul
     DepartmentModule,
     PositionModule,
     RequestTransferModule,
+    ClassModule,
   ],
   controllers: [],
   providers: [],

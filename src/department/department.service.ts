@@ -129,19 +129,36 @@ export class DepartmentService {
     }
 
     try {
-      // console.log(data)
-      for (const row of data) {
-        await this.database.insert(schema.mainOffices).values({
+      const positions = await this.database
+      .select()
+      .from(schema.Positions);
+
+    for (const row of data) {
+      const [insertedOffice] = await this.database
+        .insert(schema.mainOffices)
+        .values({
           name: row.org_name,
           short_name: row.org_abbr,
           address: row.org_address,
-          latitude: row.latitude.toString(), 
-          longitude: row.longitude.toString(), 
+          latitude: row.latitude.toString(),
+          longitude: row.longitude.toString(),
           province: row.org_province,
           area: row.district ? row.district : 'Unknown',
           type: row.org_area_desc.substring(0, 10),
-        });
+        })
+        .returning(); // ใช้ returning() เพื่อรับข้อมูลที่เพิ่งถูกเพิ่ม
+
+      // เพิ่มข้อมูลลงในตาราง officePositions สำหรับแต่ละตำแหน่ง
+      for (const position of positions) {
+        await this.database
+          .insert(schema.officePositions)
+          .values({
+            officeId: insertedOffice.id,
+            class: position.id,
+            quantity: 0,
+          });
       }
+    }
       return { message: 'Data inserted successfully' };
     } catch (error) {
       throw new Error(`Error inserting data into database: ${error.message}`);

@@ -85,7 +85,7 @@ export class UsersService {
             const position = await this.database
               .select({ id: schema.Positions.id })
               .from(schema.Positions)
-              .where(eq(schema.Positions.name, row.class_predict as any))
+              .where(eq(schema.Positions.id, row.class_predict as any))
               .limit(1);
           
             const positionId = position.length > 0 ? position[0].id : 999;
@@ -112,4 +112,29 @@ export class UsersService {
       throw new Error(`Error inserting data into database: ${error.message}`);
     }
   }
+
+
+  // new 
+  async importFile(file: Express.Multer.File) {
+  
+      if (!file.mimetype.includes('spreadsheetml')) {
+        throw new BadRequestException('Invalid file type');
+      }
+  
+      const workbook = xlsx.read(file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(worksheet);
+  
+      if (!data.length) {
+        throw new Error('No data found in the Excel file');
+      }
+  
+      try {
+        console.log(data)
+        return { message: 'Data inserted successfully' };
+      } catch (error) {
+        throw new Error(`Error inserting data into database: ${error.message}`);
+      }
+    }
 }

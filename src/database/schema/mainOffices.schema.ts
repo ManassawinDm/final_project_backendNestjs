@@ -9,5 +9,5 @@ export const mainOffices = pgTable("main_offices", {
     longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
     province: varchar("province", { length: 255 }).notNull(),
     area: varchar("area", { length: 255 }).notNull(),
-    type: varchar("type", { length: 10 }).notNull(),
+    type: varchar("type", { length: 255 }).notNull(),
 });

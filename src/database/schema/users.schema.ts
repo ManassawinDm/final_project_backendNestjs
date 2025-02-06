@@ -5,10 +5,11 @@ import { Positions } from "./class.schema";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  firstname: varchar("firstname", { length: 255 }),
-  lastname: varchar("lastname", { length: 255 }),
+  seniority_number: integer("seniority_number"),
+  firstname: varchar("firstname", { length: 255 }).notNull(),
+  lastname: varchar("lastname", { length: 255 }).notNull(),
   class: integer("class").references(()=> Positions.id).notNull(), 
   departmentId: integer("department_id").references(() => mainOffices.id),
-  positionDescription: varchar("position_description", { length: 255 }), 
+  positionDescription: varchar("position_description", { length: 255 }).notNull(), 
 });
 

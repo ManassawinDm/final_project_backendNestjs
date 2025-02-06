@@ -1,0 +1,2 @@
+ALTER TABLE "transfer_requests" ADD COLUMN "transferPeriods" integer NOT NULL;--> statement-breakpoint
+ALTER TABLE "transfer_requests" ADD CONSTRAINT "transfer_requests_transferPeriods_transfer_periods_id_fk" FOREIGN KEY ("transferPeriods") REFERENCES "public"."transfer_periods"("id") ON DELETE no action ON UPDATE no action;
