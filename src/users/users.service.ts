@@ -71,9 +71,9 @@ export class UsersService {
             const userId = Number(row.CODE);    
             // ตรวจสอบว่ามี id อยู่แล้วหรือไม่
             const existingUser = await this.database
-              .select({ id: schema.users.id })
+              .select({ id: schema.users.seniority_number })
               .from(schema.users)
-              .where(eq(schema.users.id, userId))
+              .where(eq(schema.users.seniority_number, userId))
               .limit(1);
           
             if (existingUser.length > 0) {
@@ -100,6 +100,7 @@ export class UsersService {
             const departmentId = department.length > 0 ? department[0].id : null;
           
             await this.database.insert(schema.users).values({
+              seniority_number:row.CODE,
               firstname: row.FIRSTNAME || "Unknown", 
               lastname: row.LASTNAME || "Unknown",
               class: positionId,

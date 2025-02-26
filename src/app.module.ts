@@ -18,6 +18,7 @@ import { ClassModule } from './class/class.module';
       useFactory: async (config)=>({
         secret: config.get('jwt.secret'),
       }),
+      
       global: true,
       inject: [ConfigService],
     }),

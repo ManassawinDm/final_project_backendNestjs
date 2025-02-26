@@ -7,4 +7,6 @@ export const transferPeriods = pgTable("transfer_periods", {
   startDate: timestamp("start_date").notNull(), 
   endDate: timestamp("end_date").notNull(),
   status: varchar("status", { length: 50 }).notNull(), 
+  created_at: timestamp("created_at").defaultNow().notNull(), 
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
 });

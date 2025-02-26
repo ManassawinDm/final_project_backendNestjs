@@ -5,7 +5,7 @@ import { Positions } from "./class.schema";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  seniority_number: integer("seniority_number"),
+  seniority_number: integer("seniority_number").notNull(),
   firstname: varchar("firstname", { length: 255 }).notNull(),
   lastname: varchar("lastname", { length: 255 }).notNull(),
   class: integer("class").references(()=> Positions.id).notNull(), 

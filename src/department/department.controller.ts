@@ -23,9 +23,11 @@ export class DepartmentController {
     try {
       return this.departmentService.getDepartmentsAll();
     } catch (error) {
-      throw new Error(
-        `Error occurred while fetching department: ${error.message}`,
-      );
+      console.error('Error occurred while fetching department:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch department.',
+      };
     }
   }
 
@@ -35,40 +37,75 @@ export class DepartmentController {
     @Param('type') type: 'main' | 'sub',
   ) {
     try {
-      return await this.departmentService.getDepartmentById(id, type);
-    } catch (error) {
-      throw new Error(
-        `Error occurred while fetchingbyId department: ${error.message}`,
+      const department = await this.departmentService.getDepartmentById(
+        id,
+        type,
       );
+      return {
+        success: true,
+        data: department,
+      };
+    } catch (error) {
+      console.error('Error occurred while fetching department:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch department.',
+      };
     }
   }
 
   @Delete(':id')
-  async deleteDepartmentById(@Param('id') id: number): Promise<string> {
+  async deleteDepartmentById(@Param('id') id: number) {
     try {
-      return await this.departmentService.deleteDepartmentById(id);
+      await this.departmentService.deleteDepartmentById(id);
+      return {
+        success: true,
+        message: 'Department deleted successfully.',
+      };
     } catch (error) {
-      throw new Error(
-        `Error occurred while deleting department: ${error.message}`,
-      );
+      console.error('Error occurred while deleting department:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to delete department.',
+      };
     }
   }
 
   @Post('add')
   async addDepartment(@Body() credential: AddDepartmentsDto) {
     try {
-      return this.departmentService.addDepartment(credential);
+      const department = await this.departmentService.addDepartment(credential);
+      return {
+        success: true,
+        data: department,
+      };
     } catch (error) {
-      throw new Error(`Error occurred while add department: ${error.message}`);
+      console.error('Error occurred while adding department:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to add department.',
+      };
     }
   }
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new BadRequestException('No file uploaded');
+    try {
+      if (!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+      const result = await this.departmentService.processExcel(file);
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Error occurred while uploading file:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to upload file.',
+      };
     }
-    return this.departmentService.processExcel(file);
   }
 }
